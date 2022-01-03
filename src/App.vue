@@ -12,7 +12,7 @@
 import { mapGetters } from "vuex"
 
 export default {
-  name: "App", //AIzaSyBG6bZdJIi5FPQb0GzChTXtNPMjNCNjDcM //AIzaSyC5geMNG5GRgdEyep0MeHCpQt5gavB5aX4
+  name: "App",
 
   methods: {
     dynamicScrollbarWorkaround(trackColour, thumbColour) {
