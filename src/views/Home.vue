@@ -207,11 +207,12 @@ export default {
         const tokens = output === "" ? this.outputText.trim().split(".") : output.split(".")
 
         const highlightMap = tokens.map(token => {
-          return {
-            text: token,
-            highlight: false
-          }
-        })
+          if (token.length > 0)
+            return {
+              text: token,
+              highlight: false
+            }
+        }).filter( i => i !== undefined)
 
         highlightMap[this.highlightIndex].highlight = true
 
@@ -295,6 +296,7 @@ export default {
         this.currentlySpeaking = false
         this.outputText = ""
         this.highlightTimeouts = []
+        this.highlightIndex = 0;
       })
       this.audio.play()
     },
@@ -411,6 +413,7 @@ export default {
       this.currentlySpeaking = false
       this.highlightTimeouts.forEach(i => clearTimeout(i))
       this.highlightTimeouts = []
+      this.highlightIndex = 0
     },
 
     // Read the data from the clipboard, either image to base64 string, or to string. This then calls say
