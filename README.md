@@ -6,7 +6,7 @@
 
 Clipboard TTS is used to read your text aloud for you. It is a study tool to aid the dyslexic and mentally exhausted that are having trouble reading. As a student, it's often the case that you have a pile of books to read, and eventually it can be quite challenging and exhausting to get through it all. This is where this application comes in handy! It will read any text that you copy and play extremely high quality WaveNet (deep neural network) audio of that text using the Google Cloud TTS API. This application will also scan any copied images for text using the advanced Google Cloud Vision API and read that text aloud also. 
 
-Note: As previously mentioned, you must acquire keys to the Google Cloud TTS API (https://cloud.google.com/text-to-speech) and Google Cloud Vision API (https://cloud.google.com/vision). You simply input these keys into the settings page, and the application will work like magic. Visit the given links and sign up to acquire the keys for your credentials to the APIs. 
+Note: As to not compromise quality of this application, I chose to use Google Cloud services. Therefore, you must acquire keys to the Google Cloud TTS API (https://cloud.google.com/text-to-speech) and Google Cloud Vision API (https://cloud.google.com/vision). You simply input these keys into the settings page, and the application will work like magic. Visit the given links and sign up to acquire the keys for your credentials to the APIs. 
 
 ## Features
 Features include:
