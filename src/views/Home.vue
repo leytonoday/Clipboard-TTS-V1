@@ -125,7 +125,7 @@
     </div>
 
     <!-- Right Box: Output -->
-    <div class="pageBox" style="float: right">
+    <div class="pageBox" style="float: right;">
       <p class="subtitle">Output</p>
       <div class="clipboardBox">
         <p v-if="loadingTTS">
@@ -201,7 +201,7 @@ export default {
           else
             return i
         }).join(" ")
-      }
+      } 
 
       if (this.highlightingEnabled) { // highlight the sentences that are being spoken
         const tokens = output === "" ? this.outputText.trim().split(".") : output.split(".")
@@ -435,6 +435,9 @@ export default {
 
       if (!textToSay.trim().length) 
         return
+
+      // remove the <> from the text, so they aren't interpreted as html tags
+      textToSay = textToSay.replace("<", "").replace(">", "")
 
       await this.say(textToSay)
       this.oldClipboardData = newClipboardData

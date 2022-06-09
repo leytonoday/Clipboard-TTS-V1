@@ -11,8 +11,8 @@
         General Usage
       </div>
       <div class="infoBoxBody">
-        Clipboard TTS is here to do the hard work for you, and read aloud any text you want! This application will wait for changes int he clipboard, 
-        and read it out. Simply <b>copy the text and it will be read aloud</b>. You can also screenshot the text, or even copy an image containing text, and it will also be read 
+        Clipboard TTS is here to do the hard work for you, and read aloud any text you want! This application will wait for changes in the clipboard, 
+        and read them out. Simply <b>copy the text and it will be read aloud</b>. You can also screenshot the text, or even copy an image containing text, and it will also be read 
         aloud almost instantly (depending upon your internet speed).
         It works with <b>52</b> languages, so almost all literature is suitable for this application. 
         You have full control over the settings of the TTS using the Controls on the Home page. Ensure to make use of the nifty shortcuts that make
@@ -21,7 +21,14 @@
         <br /> <br />
         Once you have the API keys, you are good to go. Switch the "Enable" switch, and the program will start detecting changes
         in your clipboard. Once a change is detected, it will scan for text. If an image is provided, it will scan the image for text also.
-        This text will then be read aloud for you to hear. You can switch the language, gender, speed and, volume of the voice. 
+        This text will then be read aloud for you to hear. 
+        <br /> <br />
+        You can switch the language, gender, speed and, volume of the voice. You can also enable 
+        highlighting, which will highlight each sentence as it is read out. 
+        <br /> <br />
+        You can also activate bionic reading, which is a new method facilitating the 
+        reading process by guiding the eyes through text with artificial fixation points. As a result, the user is only focused on the highlighted initial 
+        letters and lets the brain complete the word.
         <br /> <br />
         There are two modes in which this application runs: "Default TTS" and "Dictionary TTS". Default TTS will just read out any text it finds in the 
         clipboard, and Dictionary TTS will look up the meaning of a selected word, and read it aloud. 
