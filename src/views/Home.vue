@@ -27,7 +27,7 @@
         <div>
           <p>Enable / Disable / Stop Clipboard TTS</p>
           <div class="innerControlBox">
-            <vs-switch class="centre" style="width: 45%; padding: 1.05em" :disabled="!apiKeyTTS || !apiKeyVision" square :vs-theme="theme.name" v-model="enabledChoice">
+            <vs-switch class="centre" style="width: 45%; padding: 1.05em; margin: 0" :disabled="!apiKeyTTS || !apiKeyVision" square :vs-theme="theme.name" v-model="enabledChoice">
               <template #off> DISABLED </template>
               <template #on> ENABLED </template>
               <template #circle>
@@ -42,16 +42,29 @@
         </div>
         
         <div class="controlBox"> 
-          <p>Highlight output</p>
           <div class="innerControlBox">
-            <vs-switch class="centre" style="width: 45%; padding: 1.05em" :disabled="!enabledChoice" square :vs-theme="theme.name" v-model="highlightingEnabled">
-              <template #off> DISABLED </template>
-              <template #on> ENABLED </template>
-              <template #circle>
-                <i v-if="!highlightChoice" class="fas fa-times"></i>
-                <i v-else class="fas fa-check"></i>
-              </template>
-            </vs-switch>
+            <div style="width: 45%">
+              <p>Highlight output</p>
+              <vs-switch class="centre" style="padding: 1.05em" :disabled="!enabledChoice" square :vs-theme="theme.name" v-model="highlightingEnabled">
+                <template #off> DISABLED </template>
+                <template #on> ENABLED </template>
+                <template #circle>
+                  <i v-if="!highlightingEnabled" class="fas fa-times"></i>
+                  <i v-else class="fas fa-check"></i>
+                </template>
+              </vs-switch>
+            </div> 
+            <div style="width: 45%">
+              <p>Bionic reading</p>
+              <vs-switch class="centre" style="padding: 1.05em" :disabled="!enabledChoice" square :vs-theme="theme.name" v-model="bionicReadingEnabled">
+                <template #off> DISABLED </template>
+                <template #on> ENABLED </template>
+                <template #circle>
+                  <i v-if="!bionicReadingEnabled" class="fas fa-times"></i>
+                  <i v-else class="fas fa-check"></i>
+                </template>
+              </vs-switch>
+            </div>
           </div>
         </div>
 
@@ -119,8 +132,8 @@
           Loading...
         </p>
         <div v-else>
-          <div v-if="highlightingEnabled">
-            <span v-html="highlightedOutputText"></span>
+          <div v-if="highlightingEnabled || bionicReadingEnabled">
+            <span v-html="modifiedHtmlOutput"></span>
           </div>
           <p v-else>
             {{ outputText }}
@@ -175,25 +188,41 @@ export default {
   computed: {
     ...mapGetters(["theme", "apiKeyTTS", "apiKeyVision"]),
 
-    highlightedOutputText() {
+    modifiedHtmlOutput() {
       if (!this.outputText.trim().length)
         return ""
-      const tokens = this.outputText.trim().split(".")
+      
+      let output = ""
 
-      const highlightMap = tokens.map(token => {
-        return {
-          text: token,
-          highlight: false
-        }
-      })
+      if (this.bionicReadingEnabled) { // make the first half of each word bold 
+        output = this.outputText.trim().split(" ").map(i => {
+          if (i.length > 1)
+            return `<b>${i.substring(0, i.length / 2)}</b>${i.substring(i.length / 2)}`
+          else
+            return i
+        }).join(" ")
+      }
 
-      highlightMap[this.highlightIndex].highlight = true
+      if (this.highlightingEnabled) { // highlight the sentences that are being spoken
+        const tokens = output === "" ? this.outputText.trim().split(".") : output.split(".")
 
-      return highlightMap.map(i => {
-        if (i.highlight)
-          return `<span style="background-color: rgba(57, 189, 120, 0.5); padding: 0.1em">${i.text}</span>`
-        return i.text
-      }).join(".")
+        const highlightMap = tokens.map(token => {
+          return {
+            text: token,
+            highlight: false
+          }
+        })
+
+        highlightMap[this.highlightIndex].highlight = true
+
+        output = highlightMap.map(i => {
+          if (i.highlight)
+            return `<span style="background-color: rgba(57, 189, 120, 0.5); padding: 0.1em">${i.text}</span>`
+          return i.text
+        }).join(".")
+      }
+
+      return output
     }
   },
 
@@ -215,6 +244,8 @@ export default {
       highlightTimeouts: [], // Used to clear the timeouts of the highlights when the say ends or is stopped
       highlightIndex: 0, // the index of the currently highlighted sentence in the outputText
       highlightingEnabled: false, // bool indicating if highlighting is enabled
+
+      bionicReadingEnabled: false,
 
       modeRadioValue: "1",
       genderRadioValue: "MALE",
