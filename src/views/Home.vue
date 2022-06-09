@@ -19,7 +19,7 @@
     </div>
 
     <!-- Left Box: Controls -->
-    <div class="pageBox" style="float: left">
+    <div class="pageBox" style="float: left;">
       <p class="subtitle">Controls</p>
       <div class="controlsBox">
 
@@ -40,6 +40,20 @@
             </vs-button>
           </div>
         </div>
+        
+        <div class="controlBox"> 
+          <p>Highlight output</p>
+          <div class="innerControlBox">
+            <vs-switch class="centre" style="width: 45%; padding: 1.05em" :disabled="!enabledChoice" square :vs-theme="theme.name" v-model="highlightingEnabled">
+              <template #off> DISABLED </template>
+              <template #on> ENABLED </template>
+              <template #circle>
+                <i v-if="!highlightChoice" class="fas fa-times"></i>
+                <i v-else class="fas fa-check"></i>
+              </template>
+            </vs-switch>
+          </div>
+        </div>
 
         <!-- Language and Speed Settings --> 
         <div class="controlBox">
@@ -47,7 +61,7 @@
             <div>
               <p style="margin-bottom: 0.3em">Language</p>
               <vs-select :disabled="!enabledChoice || currentlySpeaking" v-model="languageCode" :vs-theme="theme.name">
-                <vs-option v-for="lang in Object.keys(languageCodes)" :key="lang" :label="languageCodes[lang]" :value="lang">
+                <vs-option v-for="lang in Object.keys(languageCodes)" :key="lang" :label="languageCodes[lang]" :value="lang" style="color: white">
                   {{ languageCodes[lang] }}
                 </vs-option>
               </vs-select>
@@ -55,7 +69,7 @@
             <div>
               <p style="margin-bottom: 0.3em">Speed</p>
               <vs-select :disabled="!enabledChoice || currentlySpeaking" v-model="speedSlider" :vs-theme="theme.name">
-                <vs-option v-for="speed in Object.keys(speedSliderMarks)" :key="speed" :label="speed" :value="speedSliderMarks[speed]">
+                <vs-option v-for="speed in Object.keys(speedSliderMarks)" :key="speed" :label="speed" :value="speedSliderMarks[speed]" style="color: white">
                   {{ speed }}
                 </vs-option>
               </vs-select>
@@ -101,7 +115,17 @@
     <div class="pageBox" style="float: right">
       <p class="subtitle">Output</p>
       <div class="clipboardBox">
-        <p>{{ loadingTTS ? "Loading..." : outputText }}</p>
+        <p v-if="loadingTTS">
+          Loading...
+        </p>
+        <div v-else>
+          <div v-if="highlightingEnabled">
+            <span v-html="highlightedOutputText"></span>
+          </div>
+          <p v-else>
+            {{ outputText }}
+          </p>
+        </div>
       </div>
     </div>
     </div>
@@ -145,11 +169,32 @@ export default {
     enabledChoice(value) {
       if (value)
         this.readInitClipboardData()
-    }
+    },
   },
 
   computed: {
     ...mapGetters(["theme", "apiKeyTTS", "apiKeyVision"]),
+
+    highlightedOutputText() {
+      if (!this.outputText.trim().length)
+        return ""
+      const tokens = this.outputText.trim().split(".")
+
+      const highlightMap = tokens.map(token => {
+        return {
+          text: token,
+          highlight: false
+        }
+      })
+
+      highlightMap[this.highlightIndex].highlight = true
+
+      return highlightMap.map(i => {
+        if (i.highlight)
+          return `<span style="background-color: rgba(57, 189, 120, 0.5); padding: 0.1em">${i.text}</span>`
+        return i.text
+      }).join(".")
+    }
   },
 
   // TTS is disabled upon going to the settings or help pages
@@ -166,6 +211,10 @@ export default {
       outputText: "",
       audio: null,
       oldClipboardData: null, 
+
+      highlightTimeouts: [], // Used to clear the timeouts of the highlights when the say ends or is stopped
+      highlightIndex: 0, // the index of the currently highlighted sentence in the outputText
+      highlightingEnabled: false, // bool indicating if highlighting is enabled
 
       modeRadioValue: "1",
       genderRadioValue: "MALE",
@@ -214,6 +263,7 @@ export default {
       this.audio.addEventListener("ended", () => {
         this.currentlySpeaking = false
         this.outputText = ""
+        this.highlightTimeouts = []
       })
       this.audio.play()
     },
@@ -245,20 +295,34 @@ export default {
         else 
           text = `${this.removePunctuation(text)}: ${ await this.getWordDefinition(this.removePunctuation(text)) || "Could not find a definition"}`
       }
+
+      const ssml = `<speak>${ text.trim().split(".").map((i, index) => {
+        if (i.length > 0)
+          return `<mark name="${index}"/>${i}`
+      }).join(".") }</speak>`
       
       try {
         this.loadingTTS = true
 
-        const audioReply = await axios.post(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${this.apiKeyTTS}`, {
-            input: { text},
+        const audioReply = await axios.post(`https://texttospeech.googleapis.com/v1beta1/text:synthesize?key=${this.apiKeyTTS}`, {
+            input: { ssml },
             voice: { languageCode: this.languageCode, ssmlGender: this.genderRadioValue },
             audioConfig: {
               audioEncoding: "OGG_OPUS",
               speakingRate: this.speedSlider,
-              volumeGainDb: this.volumeSliderMarks[this.volumeSlider]
+              volumeGainDb: this.volumeSliderMarks[this.volumeSlider],
             },
+            enableTimePointing: ["SSML_MARK"]
           }
         )
+
+        audioReply.data.timepoints.forEach((i, index) => {
+          const timeout = setTimeout(() => {
+            this.highlightIndex = index;
+          }, i.timeSeconds * 1000)
+          this.highlightTimeouts.push(timeout)
+        })
+
         this.outputText = text
         this.currentlySpeaking = true
 
@@ -314,6 +378,8 @@ export default {
       this.audio.currentTime = 0
       this.outputText = ""
       this.currentlySpeaking = false
+      this.highlightTimeouts.forEach(i => clearTimeout(i))
+      this.highlightTimeouts = []
     },
 
     // Read the data from the clipboard, either image to base64 string, or to string. This then calls say
@@ -335,6 +401,9 @@ export default {
 
         textToSay = await this.imageToText(newClipboardData)
       }
+
+      if (!textToSay.trim().length) 
+        return
 
       await this.say(textToSay)
       this.oldClipboardData = newClipboardData
@@ -415,6 +484,10 @@ export default {
 #helpNavButton {
   position: absolute;
   right: 2em;
+}
+
+.highlight {
+  background-color: #FFFF00;
 }
 
 </style>
