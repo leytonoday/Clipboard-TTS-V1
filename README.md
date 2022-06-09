@@ -10,11 +10,13 @@ Note: As previously mentioned, you must acquire keys to the Google Cloud TTS API
 
 ## Features
 Features include:
-- Automatic detection of clipboard changes. Changes are read aloud to the user.
+- Automatic detection of clipboard changes. Changes are read aloud to the user
 - Supporting over 50 languages
 - Both male and female voices
 - Speed and volume controls
 - A dictionary mode to read aloud the definition of the copied words
+- Output highlighting as the text is read
+- Bionic reading (inspired by https://bionic-reading.com/)
 
 See the figure below.
 
@@ -42,8 +44,12 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## Figures
-Home page with settings
-![1](https://user-images.githubusercontent.com/36010516/147893854-b90ffca7-ac4e-440e-8410-a5486f1beafc.png)
+Home page, inactive
+![1](https://user-images.githubusercontent.com/36010516/172750933-c14e5012-2c4b-448f-a0ee-775b478bc16f.png)
+
+Home page, active
+![2](https://user-images.githubusercontent.com/36010516/172751079-e4305364-6ada-4bd6-aff8-ce8369723c0b.png)
+
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
